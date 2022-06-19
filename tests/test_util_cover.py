@@ -107,13 +107,13 @@ class TCoverManager(TestCase):
 
         # Should match
         f = self.add_file("[a-2].jpg")
-        assert path_equal(
-            os.path.abspath(self._find_cover(self.song).name), f)
+        cover = self._find_cover(self.song)
+        assert cover, f"No cover found for {f}"
+        assert path_equal(os.path.abspath(cover.name), f)
 
         # Should not crash
         f = self.add_file("test.jpg")
-        assert not path_equal(
-            os.path.abspath(self._find_cover(self.song).name), f)
+        assert not path_equal(os.path.abspath(cover.name), f)
 
     def test_invalid_glob_path(self):
         config.set("albumart", "force_filename", str(True))
@@ -196,9 +196,10 @@ class TCoverManager(TestCase):
                                              (f, song("~filename")))
 
     def add_file(self, fn):
-        f = self.full_path(fn)
-        open(f, "wb").close()
-        return f
+        fn = self.full_path(fn)
+        with open(fn, "wb") as f:
+            f.write(b"007")
+        return fn
 
     def test_multiple_people(self):
         song = AudioFile({
