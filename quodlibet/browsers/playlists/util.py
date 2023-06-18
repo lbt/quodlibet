@@ -50,6 +50,8 @@ def confirm_dnd_playlist_dialog_invoke(
        the action of attempting to extend a playlist with a second
        dragged and dropped playlist.
     """
+    if len(songs) < 10:
+        return True
     title = ngettext(
         'Extend "{pl_name}" with {num} additional track?',
         'Extend "{pl_name}" with {num} additional tracks?',
