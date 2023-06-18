@@ -938,6 +938,7 @@ class EditTags(Gtk.VBox):
         library.changed(was_changed)
         for b in [save, revert]:
             b.set_sensitive(not all_done)
+        self._parent.close()
 
     def __edit_tag(self, renderer, path, new_value, model):
         #pfps leaving the newline should be OK
