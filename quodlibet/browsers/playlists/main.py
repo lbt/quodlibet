@@ -76,7 +76,7 @@ class PlaylistsBrowser(Browser, DisplayPatternMixin):
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.__render = self.__create_cell_renderer()
         self.__view = view = self.__create_playlists_view(self.__render)
-        self.__embed_in_scrolledwin(view)
+        self._swin = self.__embed_in_scrolledwin(view)
         self.__configure_buttons(songs_lib)
         self.__configure_dnd(view)
         self.__connect_signals(view)
@@ -126,14 +126,19 @@ class PlaylistsBrowser(Browser, DisplayPatternMixin):
 
     def changed(self, playlist, refresh=True):
         current = self._selected_playlist()
+        hscroll_pos = self._swin.get_hadjustment()
+        vscroll_pos = self._swin.get_vadjustment()
         for row in self._lists:
             if row[0] is playlist:
                 if refresh:
                     # Changes affect aggregate caches etc
                     print_d(f"Refreshing view in {self} for {playlist}")
                     self._lists.row_changed(row.path, row.iter)
-                    if playlist is current:
-                        self.activate()
+                    # if playlist is current:
+                    #     print(f"Fixing scroll v:{vscroll_pos} h:{hscroll_pos}")
+                    #     self.activate()
+                    #     self._swin.set_hadjustment(hscroll_pos)
+                    #     self._swin.set_vadjustment(vscroll_pos)
                 break
 
     def __removed(self, lib, playlists):
@@ -206,6 +211,7 @@ class PlaylistsBrowser(Browser, DisplayPatternMixin):
         swin.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         swin.add(view)
         self.pack_start(swin, True, True, 0)
+        return swin
 
     def __configure_buttons(self, library):
         new_pl = qltk.Button(_("_New"), Icons.DOCUMENT_NEW, Gtk.IconSize.MENU)
