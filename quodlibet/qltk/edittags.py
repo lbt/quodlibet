@@ -733,6 +733,10 @@ class EditTags(Gtk.VBox):
 
             menu.append(split_item)
 
+        process_b = MenuItem(_("_Process Value(s)"), Icons.EDIT_FIND_REPLACE)
+        process_b.connect("activate", self.__process_tag_value, view)
+        menu.append(process_b)
+
         copy_b = MenuItem(_("_Copy Value(s)"), Icons.EDIT_COPY)
         copy_b.connect("activate", self.__copy_tag_value, view)
         qltk.add_fake_accel(copy_b, "<Primary>c")
@@ -820,6 +824,29 @@ class EditTags(Gtk.VBox):
             else:
                 model.remove(row.iter)
 
+    def __process_text(self, text):
+        import string
+        text = string.capwords(text)
+        for ignore in ["De"]:
+            text = text.replace(ignore, ignore.lower())
+        return text
+
+    def __process_tag_value(self, activator, view):
+        model, paths = view.get_selection().get_selected_rows()
+        rows = [model[path] for path in paths]
+        values = []
+        for row in rows:
+            entry = row[0]
+            if entry.value:
+                if entry.origvalue is None:
+                    entry.origvalue = entry.value
+                entry.value.text = self.__process_text(entry.value.text)
+                entry.edited = True
+                print(f"row is {row} and has {row[0]}")
+                print(f"value is now {entry.value.text}")
+                #row[0].value.text = c_text
+                model.row_changed(row.path, row.iter)
+
     def __copy_tag_value(self, activator, view):
         model, paths = view.get_selection().get_selected_rows()
         rows = [model[path] for path in paths]
@@ -838,7 +865,7 @@ class EditTags(Gtk.VBox):
         deleted = {}
         added = {}
         renamed = {}
-
+        print("__save_files executing")
         for entry in model.values():
             if entry.edited and not (entry.deleted or entry.renamed):
                 if entry.origvalue is not None:
